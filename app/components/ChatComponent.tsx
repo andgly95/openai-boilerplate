@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { openAIService } from "../services/openaiService";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
@@ -8,6 +8,30 @@ export const ChatComponent: React.FC = () => {
   const [messages, setMessages] = useState<ChatCompletionMessageParam[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    generateInitialMessage();
+  }, []);
+
+  const generateInitialMessage = async () => {
+    setIsLoading(true);
+    try {
+      const initialMessage: ChatCompletionMessageParam = {
+        role: "system",
+        content: "Generate an initial greeting message for the user.",
+      };
+      const response = await openAIService.generateChatCompletion([initialMessage]);
+      const assistantMessage: ChatCompletionMessageParam = {
+        role: "assistant",
+        content: response,
+      };
+      setMessages([assistantMessage]);
+    } catch (error) {
+      console.error("Error generating initial message:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
